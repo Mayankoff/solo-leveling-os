@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-system-blue: #00e5ff;
+  --color-system-dark: #0a0a0c;
+  --color-system-panel: rgba(10, 15, 30, 0.75);
+  --color-system-border: rgba(0, 229, 255, 0.3);
+  --color-system-text: #e0f7fa;
+  --color-system-red: #ff2a2a;
+  --color-system-green: #00ff88;
+  --color-system-gold: #ffd700;
+  
+  --font-system: 'Courier New', Courier, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--color-system-dark);
+    color: var(--color-system-text);
+    font-family: var(--font-system);
+    background-image: 
+      linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 50% 0%, #0d1117 0%, #050505 80%);
+    background-size: 30px 30px, 30px 30px, 100% 100%;
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .system-window {
+    background: var(--color-system-panel);
+    border: 1px solid var(--color-system-border);
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.1), inset 0 0 20px rgba(0, 229, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 8px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .system-window::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-system-blue), transparent);
+    opacity: 0.8;
+  }
+  
+  .system-text-glow {
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  }
+  
+  .system-red-glow {
+    text-shadow: 0 0 8px rgba(255, 42, 42, 0.6);
+  }
+  
+  .system-button {
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid var(--color-system-blue);
+    color: var(--color-system-blue);
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+  }
+  
+  .system-button:hover {
+    background: rgba(0, 229, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  .bar-container {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    height: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .bar-fill-hp {
+    background: linear-gradient(90deg, #8b0000, var(--color-system-red));
+    height: 100%;
+    box-shadow: 0 0 10px var(--color-system-red);
+    transition: width 0.3s ease;
+  }
+  
+  .bar-fill-mp {
+    background: linear-gradient(90deg, #00008b, var(--color-system-blue));
+    height: 100%;
+    box-shadow: 0 0 10px var(--color-system-blue);
+    transition: width 0.3s ease;
+  }
+  
+  .bar-fill-xp {
+    background: linear-gradient(90deg, #b8860b, var(--color-system-gold));
+    height: 100%;
+    box-shadow: 0 0 10px var(--color-system-gold);
+    transition: width 0.3s ease;
+  }
 }

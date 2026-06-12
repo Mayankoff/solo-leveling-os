@@ -1,0 +1,356 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id // Clerk user ID
+  email         String   @unique
+  username      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Gamification
+  xp            Int      @default(0)
+  level         Int      @default(1)
+  lifeScore     Float    @default(0.0)
+  
+  // RPG Attributes
+  statPoints    Int      @default(0)
+  str           Int      @default(10)
+  int           Int      @default(10)
+  vit           Int      @default(10)
+  cha           Int      @default(10)
+  agi           Int      @default(10)
+
+  // Relations
+  settings      Settings?
+  habits        Habit[]
+  habitEntries  HabitEntry[]
+  workouts      WorkoutLog[]
+  workoutPlans  WorkoutPlan[]
+  dietLogs      DietLog[]
+  supplementTemplates SupplementTemplate[]
+  supplementIntakes   SupplementIntake[]
+  studySessions StudySession[]
+  studyTasks    StudyTask[]
+  skinCareLogs  SkinCareLog[]
+  skinRoutineSteps SkinCareRoutineStep[]
+  skinConditions SkinConditionLog[]
+  achievements  UserAchievement[]
+  xpLogs        XPLog[]
+
+  // Phase 3 Extensions
+  googleIntegration GoogleIntegration?
+  syncedEvents      SyncedEvent[]
+  reminders         Reminder[]
+}
+
+model Settings {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme         String   @default("dark")
+  notifications Boolean  @default(true)
+  timeZone      String   @default("UTC")
+  
+  // Diet Goals
+  targetCalories Int     @default(2000)
+  targetProtein  Int     @default(150)
+  targetCarbs    Int     @default(250)
+  targetFat      Int     @default(70)
+  targetWater    Int     @default(3000) // in ml
+}
+
+model Habit {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  category    String   @default("general") // workout, diet, study, skincare, general
+  frequency   String   @default("daily") // daily, weekly, custom
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  entries     HabitEntry[]
+}
+
+model HabitEntry {
+  id          String   @id @default(uuid())
+  habitId     String
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date // Store just the date part
+  status      String   @default("completed") // completed, partial, skipped
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@unique([habitId, date])
+}
+
+model WorkoutLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  type        String   // push, pull, legs, cardio, etc
+  status      String   // completed, partial, skipped
+  timeZone    String   @default("UTC")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  exercises   Exercise[]
+  
+  @@unique([userId, date])
+}
+
+model Exercise {
+  id          String     @id @default(uuid())
+  workoutId   String
+  workout     WorkoutLog @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  name        String
+  sets        Int
+  reps        Int
+  weight      Float?
+  notes       String?
+  order       Int        @default(0)
+  restTime    Int?       @default(90)
+  completed   Boolean    @default(false)
+}
+
+model WorkoutPlan {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  name        String?  // e.g., "Push Day"
+  
+  exercises   WorkoutPlanExercise[]
+
+  @@unique([userId, dayOfWeek])
+}
+
+model WorkoutPlanExercise {
+  id            String      @id @default(uuid())
+  workoutPlanId String
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  name          String
+  sets          Int
+  reps          Int
+  weight        Float?
+  notes         String?
+  order         Int         @default(0)
+  restTime      Int?        @default(90)
+}
+
+model DietLog {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  targetCalories Int     @default(2000)
+  consumedCalories Int   @default(0)
+  protein       Float    @default(0)
+  carbs         Float    @default(0)
+  fat           Float    @default(0)
+  fiber         Float    @default(0)
+  waterIntake   Int      @default(0) // in ml
+  targetWater   Int      @default(3000) // in ml
+  timeZone      String   @default("UTC")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  meals         Meal[]
+
+  @@unique([userId, date])
+}
+
+model Meal {
+  id          String   @id @default(uuid())
+  dietLogId   String
+  dietLog     DietLog  @relation(fields: [dietLogId], references: [id], onDelete: Cascade)
+  type        String   // breakfast, lunch, dinner, snack
+  name        String
+  calories    Int
+  protein     Float?
+  carbs       Float?
+  fat         Float?
+  time        DateTime @default(now())
+}
+
+model SupplementTemplate {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  category      String
+  dosage        Int
+  unit          String
+  frequency     String   @default("Daily")
+  preferredTime String?
+  notes         String?
+  createdAt     DateTime @default(now())
+}
+
+model SupplementIntake {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  supplementId  String?  // Optional relation to template
+  name          String
+  category      String
+  dosage        Int
+  unit          String
+  date          DateTime @db.Date
+  time          DateTime @default(now())
+  timeZone      String   @default("UTC")
+  status        String   @default("completed") // completed, missed
+  createdAt     DateTime @default(now())
+}
+
+model StudySession {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  subject     String
+  topic       String?
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?     // in minutes
+  timeZone    String   @default("UTC")
+  xpEarned    Int      @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model StudyTask {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String
+  title       String
+  description String?
+  deadline    DateTime?
+  priority    String   @default("medium") // low, medium, high, critical
+  status      String   @default("pending") // pending, completed
+  completionTime DateTime?
+  timeZone    String   @default("UTC")
+  xpEarned    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SkinCareLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  routineType String   // morning, evening
+  status      String   // completed, skipped
+  completionTime DateTime?
+  timeZone    String   @default("UTC")
+  xpEarned    Int      @default(0)
+  notes       String?
+  completedSteps String @default("[]") // JSON array of completed SkinCareRoutineStep IDs
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, date, routineType])
+}
+
+model SkinCareRoutineStep {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineType String   // morning, evening
+  name        String
+  order       Int      @default(0)
+}
+
+model SkinConditionLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  timeZone    String   @default("UTC")
+  notes       String?
+  photoUrl    String?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, date])
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  badgeIcon   String
+  condition   String   // Internal logic identifier
+  xpReward    Int      @default(0)
+
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model XPLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int
+  source      String   // workout, study, skincare, etc
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model GoogleIntegration {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  expiryDate   BigInt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SyncedEvent {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityType    String   // e.g., "workout", "study", "skincare"
+  entityId      String   // Internal DB ID
+  googleEventId String   @unique
+  lastSynced    DateTime @default(now())
+
+  @@unique([entityType, entityId])
+}
+
+model Reminder {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  entityType    String   // "workout", "study", "custom"
+  entityId      String?
+  scheduledTime DateTime
+  timeZone      String   @default("UTC")
+  recurrence    String?  // cron string or custom enum
+  isCompleted   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
