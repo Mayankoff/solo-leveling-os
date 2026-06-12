@@ -1,0 +1,17 @@
+{
+  "name": "SoloOS",
+  "short_name": "SoloOS",
+  "description": "Solo Leveling inspired life management system",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00e5ff",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
