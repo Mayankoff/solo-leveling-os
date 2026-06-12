@@ -35,7 +35,7 @@ export async function getWorkoutData() {
 
   // Auto-generate today's session from the template if it doesn't exist
   if (!todayLog) {
-    const todayPlan = user.workoutPlans.find(p => p.dayOfWeek === dayOfWeek);
+    const todayPlan = user.workoutPlans.find((p: any) => p.dayOfWeek === dayOfWeek);
     if (todayPlan) {
       // Create it
       todayLog = await db.workoutLog.create({
@@ -46,7 +46,7 @@ export async function getWorkoutData() {
           type: todayPlan.name || "Workout",
           status: "Not Started",
           exercises: {
-            create: todayPlan.exercises.map(ex => ({
+            create: todayPlan.exercises.map((ex: any) => ({
               name: ex.name,
               sets: ex.sets,
               reps: ex.reps,
@@ -194,7 +194,7 @@ export async function toggleExerciseCompletion(exerciseId: string, completed: bo
 
   if (log) {
     const total = log.exercises.length;
-    const completedCount = log.exercises.filter(e => e.completed).length;
+    const completedCount = log.exercises.filter((e: any) => e.completed).length;
     
     let newStatus = "Not Started";
     if (completedCount === total && total > 0) newStatus = "Completed";

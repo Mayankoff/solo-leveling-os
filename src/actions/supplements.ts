@@ -77,8 +77,8 @@ export async function logSupplementIntake(templateId: string, status: string = "
   ]);
 
   if (allTemplates.length > 0) {
-    const completedIds = new Set(todayIntakes.map(i => i.supplementId));
-    const allCompleted = allTemplates.every(t => completedIds.has(t.id));
+    const completedIds = new Set(todayIntakes.map((i: any) => i.supplementId));
+    const allCompleted = allTemplates.every((t: any) => completedIds.has(t.id));
 
     if (allCompleted) {
       // Award XP for taking all supplements

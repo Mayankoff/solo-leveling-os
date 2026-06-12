@@ -79,7 +79,7 @@ async function checkGlobalAchievements(userId: string) {
   });
   if (!user) return;
 
-  const unlockedIds = new Set(user.achievements.map(a => a.achievementId));
+  const unlockedIds = new Set(user.achievements.map((a: any) => a.achievementId));
   const allAchievements = await db.achievement.findMany();
 
   for (const achievement of allAchievements) {
@@ -96,7 +96,7 @@ async function checkGlobalAchievements(userId: string) {
         shouldUnlock = user.workouts.length >= 10;
         break;
       case "STUDY_MONSTER":
-        const completedStudy = user.studyTasks.filter(t => t.status === "completed");
+        const completedStudy = user.studyTasks.filter((t: any) => t.status === "completed");
         shouldUnlock = completedStudy.length >= 10;
         break;
       case "LEVEL_10":
